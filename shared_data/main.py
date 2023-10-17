@@ -36,9 +36,7 @@ def calculate_correlation_all_countries():
 
     result_df = inflation_sum_df.join(bigmac_sum_df, inflation_sum_df["year"] == bigmac_sum_df["year"], "inner")
 
-    correlation = result_df.select(corr("inflation_sum_1970", "bigmac_price_sum").alias("correlation"))
-
-    correlation.write.csv("/app/results/correlation_all_countries.csv", header=True, mode="overwrite")
+    result_df.write.csv("/app/results/correlation_all_countries.csv", header=True, mode="overwrite")
 
 def agg_inf_by_year_and_bigmac():
     for year in range(1970, 2023):
