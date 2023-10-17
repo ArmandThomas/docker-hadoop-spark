@@ -25,7 +25,8 @@ df_bigmac = df_bigmac.select(
 
 def calculate_correlation_all_countries():
     for year in range(1970, 2023):
-        df_inflation = df_inflation.withColumn(str(year), expr(f"CAST({year} AS DOUBLE)"))
+        column_name = str(year)
+        df_inflation = df_inflation.withColumn(column_name, col(column_name).cast("double"))
 
     inflation_sum_df = df_inflation.groupBy("Country", "Country Code").sum(*[str(year) for year in range(1970, 2023)])
 
@@ -40,9 +41,11 @@ def calculate_correlation_all_countries():
     correlation.write.csv("/app/results/correlation_all_countries.csv", header=True, mode="overwrite")
 
 def agg_inf_by_year_and_bigmac():
-    inflation_sum_df = df_inflation.groupBy("Country", "Country Code").sum(
-        *[str(year) for year in range(1970, 2023)]
-    )
+    for year in range(1970, 2023):
+        column_name = str(year)
+        df_inflation = df_inflation.withColumn(column_name, col(column_name).cast("double"))
+
+    inflation_sum_df = df_inflation.groupBy("Country", "Country Code").sum(*[str(year) for year in range(1970, 2023)])
 
     bigmac_sum_df = df_bigmac.withColumn("year", year("date"))
 
