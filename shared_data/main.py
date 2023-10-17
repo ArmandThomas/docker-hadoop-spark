@@ -26,7 +26,7 @@ df_bigmac = df_bigmac.select(
 def calculate_correlation_all_countries():
     for year in range(1970, 2023):
         column_name = str(year)
-        df_inflation = df_inflation.withColumn(column_name, col(column_name).cast("double"))
+        df_inflation.withColumn(column_name, col(column_name).cast("double"))
 
     inflation_sum_df = df_inflation.groupBy("Country", "Country Code").sum(*[str(year) for year in range(1970, 2023)])
 
