@@ -1,8 +1,20 @@
-FROM bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+FROM bde2020/hadoop-base:2.0.0-hadoop3.2.1-java8
 
-COPY ./shared_data /shared_data
+MAINTAINER Ivan Ermilov <ivan.s.ermilov@gmail.com>
+
+HEALTHCHECK CMD curl -f http://localhost:9870/ || exit 1
+
+ENV HDFS_CONF_dfs_namenode_name_dir=file:///hadoop/dfs/name
+RUN mkdir -p /hadoop/dfs/name
+VOLUME /hadoop/dfs/name
+
+ADD run.sh /run.sh
+RUN chmod a+x /run.sh
+
+EXPOSE 9870
 
 CMD ["hdfs dfs -mkdir -p /data/openbeer/data/input"]
 CMD ["hdfs dfs -put /shared_data/bigmac.csv /data/openbeer/data/input/bigmac.csv"]
 CMD ["hdfs dfs -put /shared_data/inflation.csv /data/openbeer/data/input/inflation.csv"]
 CMD ["hdfs dfs -put /shared_data/world-data-2023.csv /data/openbeer/data/input/world-data-2023.csv"]
+CMD ["/run.sh"]
