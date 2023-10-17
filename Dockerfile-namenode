@@ -13,6 +13,8 @@ RUN chmod a+x /run.sh
 
 EXPOSE 9870
 
+COPY shared_data /shared_data
+
 CMD ["/run.sh"]
 
 

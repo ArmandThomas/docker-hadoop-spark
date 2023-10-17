@@ -1,5 +1,9 @@
 FROM bde2020/spark-base:3.0.0-hadoop3.2
 
+# Copy your application files into the container
+COPY ./shared_data /shared_data
+
+
 COPY master/master.sh /master.sh
 
 ENV SPARK_MASTER_PORT 7077
