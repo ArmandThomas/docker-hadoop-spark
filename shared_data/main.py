@@ -23,7 +23,7 @@ df_bigmac = df_bigmac.select(
 ).dropna()
 
 def calculate_correlation_all_countries():
-    # Somme de l'inflation par année pour tous les pays
+
     inflation_sum_df = df_inflation.groupBy("Country", "Country Code").sum(
         "1970", "1971", "1972", "1973", "1974", "1975", "1976", "1977", "1978", "1979",
         "1980", "1981", "1982", "1983", "1984", "1985", "1986", "1987", "1988", "1989",
@@ -36,12 +36,10 @@ def calculate_correlation_all_countries():
     for year in range(1970, 2023):
         inflation_sum_df = inflation_sum_df.withColumnRenamed("sum({})".format(year), "inflation_sum_{}".format(year))
 
-    # Somme du prix du Big Mac (dollar_price) par année pour tous les pays
     bigmac_sum_df = df_bigmac.withColumn("year", year("date"))
     bigmac_sum_df = bigmac_sum_df.groupBy("year").sum("dollar_price")
     bigmac_sum_df = bigmac_sum_df.withColumnRenamed("sum(dollar_price)", "bigmac_price_sum")
 
-    # Joindre les deux DataFrames pour obtenir une corrélation
     result_df = inflation_sum_df.join(bigmac_sum_df, inflation_sum_df["year"] == bigmac_sum_df["year"], "inner")
 
     result_df.write.csv("/app/results/correlation_all_countries.csv", header=True, mode="overwrite")
