@@ -17,8 +17,5 @@ COPY shared_data /shared_data
 
 CMD ["/run.sh"]
 
-CMD ["hdfs", "dfs", "-mkdir", "-p", "/data/openbeer/data/input"]
-CMD ["hdfs", "dfs", "-put", "/shared_data/bigmac.csv", "/data/openbeer/data/input/bigmac.csv"]
-CMD ["hdfs", "dfs", "-put", "/shared_data/inflation.csv", "/data/openbeer/data/input/inflation.csv"]
-CMD ["hdfs", "dfs", "-put", "/shared_data/world-data-2023.csv", "/data/openbeer/data/input/world-data-2023.csv"]
+
 
