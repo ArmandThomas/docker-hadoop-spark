@@ -1,5 +1,10 @@
 FROM bde2020/spark-master:3.0.0-hadoop3.2
 
-COPY ./shared_data shared_data
+# Copy your application files into the container
+COPY ./shared_data /shared_data
 
-CMD  ["/spark/bin/spark-submit > ./shared_data/main.py"]
+# Set the working directory
+WORKDIR /shared_data
+
+# Define the command to run your Spark application
+CMD ["/spark/bin/spark-submit", "main.py"]
