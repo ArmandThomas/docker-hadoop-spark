@@ -6,6 +6,7 @@ spark = SparkSession.builder.appName("BigMac").getOrCreate()
 
 # Load the data from HDFS, select columns, and drop rows with missing values
 #df_geo_countries = spark.read.csv("hdfs://namenode:9000/data/openbeer/data/input/world-data-2023.csv", header=True)
+print("Hello")
 df_bigmac = spark.read.csv("hdfs://namenode:9000/data/openbeer/data/input/bigmac.csv", header=True)
 df_bigmac.show()
 #df_geo_countries = df_geo_countries.select("Country", "Latitude", "Longitude").dropna()
