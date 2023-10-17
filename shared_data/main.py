@@ -3,7 +3,9 @@ from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName("dataClean").getOrCreate()
 
 df_geo_countries = spark.read.csv("hdfs://namenode:9000/data/openbeer/data/input/world-data-2023.csv", header=True)
-df_geo_countries = df_geo_countries.select("Country", "Latitude", "Longitude").dropna()
+df_geo_countries = df_geo_countries.select("Country", "Latitude", 'Longitude"').dropna()
+
+df_geo_countries = df_geo_countries.withColumnRenamed('Longitude"', "Longitude")
 
 df_inflation = spark.read.csv("hdfs://namenode:9000/data/openbeer/data/input/inflation.csv", header=True)
 df_inflation = df_inflation.select(
