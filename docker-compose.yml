@@ -125,4 +125,8 @@ volumes:
   hadoop_datanode:
   hadoop_historyserver:
   shared_data:
+    driver_opts:
+      type: none
+      device: ./shared_data
+      o: bind
 
