@@ -24,7 +24,6 @@ df_bigmac = df_bigmac.select(
 ).dropna()
 
 def calculate_correlation_all_countries():
-    # Convertir les colonnes de l'inflation en types numériques (double)
     for year in range(1970, 2023):
         df_inflation = df_inflation.withColumn(str(year), expr(f"CAST({year} AS DOUBLE)"))
 
@@ -36,7 +35,6 @@ def calculate_correlation_all_countries():
 
     result_df = inflation_sum_df.join(bigmac_sum_df, inflation_sum_df["year"] == bigmac_sum_df["year"], "inner")
 
-    # Calcul de la corrélation entre l'inflation et le prix du Big Mac
     correlation = result_df.select(corr("inflation_sum_1970", "bigmac_price_sum").alias("correlation"))
 
     correlation.write.csv("/app/results/correlation_all_countries.csv", header=True, mode="overwrite")
