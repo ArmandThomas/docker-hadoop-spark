@@ -1,0 +1,8 @@
+FROM bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+
+COPY ./shared_data /shared_data
+
+CMD ["hdfs dfs -mkdir -p /data/openbeer/data/input"]
+CMD ["hdfs dfs -put /shared_data/bigmac.csv /data/openbeer/data/input/bigmac.csv"]
+CMD ["hdfs dfs -put /shared_data/inflation.csv /data/openbeer/data/input/inflation.csv"]
+CMD ["hdfs dfs -put /shared_data/world-data-2023.csv /data/openbeer/data/input/world-data-2023.csv"]
