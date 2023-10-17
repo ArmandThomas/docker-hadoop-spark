@@ -127,6 +127,6 @@ volumes:
   shared_data:
     driver_opts:
       type: none
-      device: shared_data
+      device: /home/armand/at/docker-hadoop-spark/shared_data
       o: bind
 
