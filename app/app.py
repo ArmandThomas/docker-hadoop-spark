@@ -6,9 +6,10 @@ app.config['DEBUG'] = True
 
 url = 'http://namenode:9870/'
 
-print(url)
-
-client = InsecureClient(url)
+try :
+    client = InsecureClient(url)
+except Exception as e:
+    print(e)
 
 @app.route('/data', methods=['GET'])
 def get_data():
