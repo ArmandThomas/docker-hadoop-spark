@@ -11,7 +11,7 @@ client = InsecureClient(url)
 @app.route('/data', methods=['GET'])
 def get_data():
 
-    file_path = "/data/openbeer/data/output/csv_inflation_bigmac.csv"
+    file_path = "/data/openbeer/data/output/csv_inflation_bigmac.csv/part-00000-fe841e62-1d8d-46da-8975-041ec858f945-c000.csv"
 
     with client.read(file_path) as reader:
         content = reader.read()
