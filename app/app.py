@@ -11,13 +11,9 @@ client = InsecureClient(url)
 @app.route('/data', methods=['GET'])
 def get_data():
 
-    file_path = "/data/openbeer/data/output/csv_inflation_bigmac.csv/part-00000-fe841e62-1d8d-46da-8975-041ec858f945-c000.csv"
+    array_of_file = client.list('/data/openbeer/data/output/csv_agg_inflation_bigmac.csv')
 
-    with client.read(file_path) as reader:
-        content = reader.read()
-        print(content)
-
-    return content
+    return jsonify(array_of_file)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
