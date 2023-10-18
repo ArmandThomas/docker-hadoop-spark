@@ -52,7 +52,7 @@ def merge_df_by_country_name(df1, df2):
     return df
 
 def save_df_to_csv(df, path):
-    df.coalesce(1).write.save(path, format='csv', mode='overwrite')
+    df.coalesce(1).write.save(path, format='csv', mode='overwrite', header=True)
 
 df_bigmac = group_by_name_big_mac_and_agg_by_year(df_bigmac)
 df_result = merge_df_by_country_name(df_inflation, df_bigmac)
