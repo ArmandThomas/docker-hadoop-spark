@@ -9,6 +9,9 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 COPY . /app
 
+RUN ["pip3", "install", "hdfs"]
+RUN ["pip3", "install", "flask"]
+
 ENTRYPOINT ["python3"]
 CMD ["app.py"]
 
