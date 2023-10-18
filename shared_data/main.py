@@ -35,7 +35,7 @@ for row in df_inflation.collect():
                 df_inflation = df_inflation.withColumn(str(year), row[str(year - 1)])
 
 def group_by_name_big_mac_and_agg_by_year(df):
-    df = df.groupBy("name", "year").agg(sum("local_price").alias("local_price_sum"), sum("dollar_price").alias("dollar_price_sum"))
+    df = df.groupBy("name", "year").agg(sum("dollar_price").alias("dollar_price_sum"))
     return df
 
 def merge_df_by_country_name(df1, df2):
