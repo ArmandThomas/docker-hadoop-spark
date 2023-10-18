@@ -27,11 +27,17 @@ for year in range(1970, 2023):
    column_name = str(year)
    df_inflation.withColumn(column_name, col(column_name).cast("double"))
 
+def sum_bigmac_and_inflation_by_year():
+   inflation_sum_df = df_inflation.groupBy("Country", "Country Code").sum(*[str(year) for year in range(1970, 2023)])
+   bigmac_sum_df = df_bigmac.withColumn("year", year("date"))
+
+   return inflation_sum_df, bigmac_sum_df
+
 def calculate_correlation_all_countries():
 
-    inflation_sum_df = df_inflation.groupBy("Country", "Country Code").sum(*[str(year) for year in range(1970, 2023)])
+    inflation_sum_df, bigmac_sum_df = sum_bigmac_and_inflation_by_year()
 
-    bigmac_sum_df = df_bigmac.withColumn("year", year("date"))
+
     bigmac_sum_df = bigmac_sum_df.groupBy("year").sum("dollar_price")
     bigmac_sum_df = bigmac_sum_df.withColumnRenamed("sum(dollar_price)", "bigmac_price_sum")
 
@@ -41,9 +47,7 @@ def calculate_correlation_all_countries():
 
 def agg_inf_by_year_and_bigmac():
 
-    inflation_sum_df = df_inflation.groupBy("Country", "Country Code").sum(*[str(year) for year in range(1970, 2023)])
-
-    bigmac_sum_df = df_bigmac.withColumn("year", year("date"))
+    inflation_sum_df, bigmac_sum_df = sum_bigmac_and_inflation_by_year()
 
     bigmac_sum_df = bigmac_sum_df.groupBy("name", "year").sum("dollar_price")
 
