@@ -12,8 +12,8 @@ COPY . /app
 RUN ["pip3", "install", "hdfs"]
 RUN ["pip3", "install", "flask"]
 
-RUN ["export", "FLASK_APP=app.py"]
-RUN ["export", "FLASK_ENV=development"]
+ENV FLASK_APP=app.py
+ENV FLASK_ENV=development
 
 ENTRYPOINT ["python3"]
 CMD ["app.py"]
