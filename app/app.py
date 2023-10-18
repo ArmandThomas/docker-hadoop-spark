@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, request
 from hdfs import InsecureClient
 import pandas as pd
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 url = 'http://namenode:9870/'
 
@@ -27,7 +29,7 @@ def get_data_by_year(year):
     with client.read('/data/openbeer/data/output/csv_inflation_bigmac.csv/' + file_to_read, encoding='utf-8') as reader:
         pd_df = pd.read_csv(reader)
 
-    pd_df = pd_df[pd_df['year'] == year]
+    pd_df = pd_df[pd_df['Year'] == year]
 
     return jsonify(pd_df.to_dict(orient='records'))
 
@@ -43,10 +45,10 @@ def get_countries():
 
 @app.route('/mcdo', methods=['GET'])
 def get_mcdo():
-    array_of_file = client.list('/data/openbeer/data/openbeer/data/output/csv_mcdo.csv')
+    array_of_file = client.list('/data/openbeer/data/output/csv_mcdo.csv')
     file_to_read = array_of_file[1]
 
-    with client.read('/data/openbeer/data/openbeer/data/output/csv_mcdo.csv/' + file_to_read, encoding='utf-8') as reader:
+    with client.read('/data/openbeer/data/output/csv_mcdo.csv/' + file_to_read, encoding='utf-8') as reader:
         pd_df = pd.read_csv(reader)
 
     return jsonify(pd_df.to_dict(orient='records'))

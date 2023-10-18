@@ -1,5 +1,5 @@
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, year, when, sum, lit
+from pyspark.sql import SparkSession, Window
+from pyspark.sql.functions import col, year, when, sum, lit, avg
 
 spark = SparkSession.builder.appName("dataClean").getOrCreate()
 
@@ -31,7 +31,7 @@ df_mcdo = df_mcdo.select(
     "McDonald's Revenue", "Fiscal Year / Year"
 ).dropna()
 
-df_mcdo = df_mcdo.withColumn("Fiscal Year / Year", when(col("Fiscal Year / Year").isNotNull(), col("Fiscal Year / Year").substr(2, 4)))
+df_mcdo = df_mcdo.withColumn("McDonald's Revenue", when(col("McDonald's Revenue").isNotNull(), col("McDonald's Revenue").substr(2, 4).cast("float") * 1000000000))
 
 for row in df_inflation.collect():
     for year in range(1970, 2023):
@@ -40,10 +40,6 @@ for row in df_inflation.collect():
                 df_inflation = df_inflation.withColumn(str(year), 0)
             else:
                 df_inflation = df_inflation.withColumn(str(year), row[str(year - 1)])
-
-def group_by_name_big_mac_and_agg_by_year(df):
-    df = df.groupBy("name", "year").agg(sum("dollar_price").alias("dollar_price_sum"))
-    return df
 
 def merge_df_by_country_name(df1, df2):
     df = df1.join(df2, df1["Country"] == df2["name"], "inner").drop("name")
@@ -54,27 +50,27 @@ def merge_df_by_country_name(df1, df2):
         df = df.withColumn("inflation_value", when(col("Year") == year, col(str(year))).otherwise(col("inflation_value")))
         df = df.drop(str(year))
 
+    df = df.groupBy("Country", "Year").agg(
+     avg("inflation_value").alias("inflation_value"),
+     avg("dollar_price").alias("dollar_price_avg")
+    )
+
     return df
 
 def agg_for_all_years(df):
-    len_df = df.count()
 
-    df = df.filter((col("inflation_value") != 0) | (col("inflation_value").isNotNull()))
-    length_inf = df.count()
+    agg_result = df.groupBy("Year").agg(
+        avg("inflation_value").alias("inflation_value_sum"),
+        avg("dollar_price_avg").alias("dollar_price_avg")
+    )
 
-    df = df.filter((col("dollar_price_sum") != 0) | (col("dollar_price_sum").isNotNull()))
-    length_dollar = df.count()
-
-    agg_result = df.groupBy("Year").agg(sum("inflation_value").alias("inflation_value_sum"), sum("dollar_price_sum").alias("dollar_price_sum")).withColumn("inflation_value_sum", col("inflation_value_sum") / length_inf * 100).withColumn("dollar_price_sum", col("dollar_price_sum") / length_dollar * 10)
-
-    return agg_result
+    return agg_result.sort("Year")
 
 
 
 def save_df_to_csv(df, path):
     df.coalesce(1).write.save(path, format='csv', mode='overwrite', header=True)
 
-df_bigmac = group_by_name_big_mac_and_agg_by_year(df_bigmac)
 df_result = merge_df_by_country_name(df_inflation, df_bigmac)
 
 save_df_to_csv(df_result, "hdfs://namenode:9000/data/openbeer/data/output/csv_inflation_bigmac.csv")
@@ -87,4 +83,3 @@ df_mcdo = df_mcdo.withColumnRenamed("Fiscal Year / Year", "Year").withColumnRena
 save_df_to_csv(df_mcdo, "hdfs://namenode:9000/data/openbeer/data/output/csv_mcdo.csv")
 
 spark.stop()
-
