@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, year, when, sum
+from pyspark.sql.functions import col, year, when, sum, lit
 
 spark = SparkSession.builder.appName("dataClean").getOrCreate()
 
@@ -43,10 +43,12 @@ def group_by_name_big_mac_and_agg_by_year(df):
 def merge_df_by_country_name(df1, df2):
     df = df1.join(df2, df1["Country"] == df2["name"], "inner").drop("name")
 
-    df = df.withColumn("inflation_value", when(col("Year") == 1970, 0).otherwise(0))
+    df = df.withColumn("inflation_value",  lit(0))
+
+    print("hello")
 
     for year in range(1970, 2023):
-        df = df.withColumn("inflation_value", when(col("Year") == year, col("inflation_value") + col(str(year))).otherwise(col("inflation_value")))
+        df = df.withColumn("inflation_value", when(col("Year") == year, col(str(year))).otherwise(col("inflation_value")))
         df = df.drop(str(year))
 
     return df
