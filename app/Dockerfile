@@ -11,6 +11,8 @@ COPY . /app
 
 RUN ["pip3", "install", "hdfs"]
 RUN ["pip3", "install", "flask"]
+RUN ["pip3", "install", "flask_cors"]
+RUN ["pip3", "install", "pandas"]
 
 ENV FLASK_APP=app.py
 ENV FLASK_ENV=development
