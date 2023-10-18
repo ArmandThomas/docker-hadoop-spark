@@ -50,9 +50,10 @@ def merge_df_by_country_name(df1, df2):
     return df
 
 def agg_for_all_years(df):
+    len_df = df.count()
     agg_result = df.groupBy("Year").agg(
-        sum("dollar_price_sum").alias("dollar_price_sum"),
-        sum("inflation_value").alias("inflation_value")
+        sum("dollar_price_sum").alias("dollar_price_sum") / len_df,
+        sum("inflation_value").alias("inflation_value") / len_df,
     )
     return agg_result
 
