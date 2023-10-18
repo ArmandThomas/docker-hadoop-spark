@@ -34,8 +34,6 @@ for row in df_inflation.collect():
             else:
                 df_inflation = df_inflation.withColumn(str(year), row[str(year - 1)])
 
-df_inflation.show(10)
-
 def group_by_name_big_mac_and_agg_by_year(df):
     df = df.groupBy("name", "year").agg(sum("local_price").alias("local_price_sum"), sum("dollar_price").alias("dollar_price_sum"))
     return df
@@ -51,6 +49,13 @@ def merge_df_by_country_name(df1, df2):
 
     return df
 
+def agg_for_all_years(df):
+    agg_result = df.groupBy("Year").agg(
+        sum("dollar_price_sum").alias("dollar_price_sum"),
+        sum("inflation_value").alias("inflation_value")
+    )
+    return agg_result
+
 def save_df_to_csv(df, path):
     df.coalesce(1).write.save(path, format='csv', mode='overwrite', header=True)
 
@@ -58,8 +63,9 @@ df_bigmac = group_by_name_big_mac_and_agg_by_year(df_bigmac)
 df_result = merge_df_by_country_name(df_inflation, df_bigmac)
 save_df_to_csv(df_result, "hdfs://namenode:9000/data/openbeer/data/output/csv_inflation_bigmac.csv")
 
-df_inflation.show(10)
-df_bigmac.show(10)
+agg_result = agg_for_all_years(df_result)
+agg_result.show(10)
+save_df_to_csv(agg_result, "hdfs://namenode:9000/data/openbeer/data/output/csv_agg_inflation_bigmac.csv")
 
 spark.stop()
 

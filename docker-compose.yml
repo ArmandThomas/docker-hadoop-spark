@@ -2,7 +2,8 @@ version: "3"
 
 services:
   namenode:
-    image: namenodev1
+    build:
+      dockerfile: Dockerfile-namenode
     container_name: namenode
     restart: always
     ports:
@@ -60,8 +61,9 @@ services:
       - ./hadoop.env
 
   spark-master:
-    image: sparkv1
     container_name: spark-master
+    build:
+      dockerfile: Dockerfile-spark
     depends_on:
       - namenode
       - datanode
