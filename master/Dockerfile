@@ -11,3 +11,4 @@ ENV SPARK_MASTER_LOG /spark/logs
 EXPOSE 8080 7077 6066
 
 CMD ["/bin/bash", "/master.sh"]
+# CMD ["/spark/bin/spark-submit", "/shared_data/main.py"] /spark/bin/spark-submit /shared_data/main.py
