@@ -1,9 +1,12 @@
-FROM node:16-alpine3.11 AS builder
+FROM ubuntu:latest
 
-RUN ["git", "clone", "https://github.com/ArmandThomas/bigmac_inflation_study"]
+RUN apt-get update && apt-get install -y git nodejs npm
+
+RUN ["git", "clone", "https://github.com/ArmandThomas/bigmac_inflation_study.git"]
 
 WORKDIR /bigmac_inflation_study
 
 RUN ["npm", "install"]
 
-CMD ["npm", "run", "start"]
+CMD ["npm", "start"]
+
