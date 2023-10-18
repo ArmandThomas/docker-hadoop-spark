@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, expr, year, corr
+from pyspark.sql.functions import col, year, when, sum
 
 spark = SparkSession.builder.appName("dataClean").getOrCreate()
 
@@ -23,44 +23,32 @@ df_bigmac = df_bigmac.select(
     "date", "name", "local_price", "dollar_price"
 ).dropna()
 
+df_inflation = df_inflation.fillna(0)
+
 for year in range(1970, 2023):
-   column_name = str(year)
-   df_inflation.withColumn(column_name, col(column_name).cast("double"))
+    df_inflation = df_inflation.withColumn(str(year), col(str(year)).cast("float"))
 
-def sum_bigmac_and_inflation_by_year():
-   inflation_sum_df = df_inflation.groupBy("Country", "Country Code").sum(*[str(year) for year in range(1970, 2023)])
-   bigmac_sum_df = df_bigmac.withColumn("year", year("date"))
+def save_inflation_and_bigmac_data(spark, df_inflation, df_bigmac, output_path):
+    # Convert all relevant columns in the inflation dataframe to float
+    inflation_columns = [str(year) for year in range(1970, 2023)]
+    for year in inflation_columns:
+        df_inflation = df_inflation.withColumn(year, col(year).cast("float"))
 
-   return inflation_sum_df, bigmac_sum_df
+    # Convert the date column in the bigmac dataframe to a date type and then extract the year
+    df_bigmac = df_bigmac.withColumn("Year", year(when(col("date").isNotNull(), col("date").cast("date"))))
 
-def calculate_correlation_all_countries():
+    # Group the inflation data by year and calculate the sum for each year
+    inflation_sum_columns = [sum(col(year)).alias(year) for year in inflation_columns]
+    df_inflation_sum = df_inflation.groupBy().agg(*inflation_sum_columns)
 
-    inflation_sum_df, bigmac_sum_df = sum_bigmac_and_inflation_by_year()
+    # Group the bigmac data by year and calculate the sum of "local_price" for each year
+    df_bigmac_sum = df_bigmac.groupBy("Year").agg(sum("local_price").alias("Local_Price_Sum"))
 
+    # Join the inflation and bigmac dataframes on the "Year" column
+    result_df = df_inflation_sum.crossJoin(df_bigmac_sum)
 
-    bigmac_sum_df = bigmac_sum_df.groupBy("year").sum("dollar_price")
-    bigmac_sum_df = bigmac_sum_df.withColumnRenamed("sum(dollar_price)", "bigmac_price_sum")
+    result_df.write.option("header", "true").csv(output_path)
 
-    result_df = inflation_sum_df.join(bigmac_sum_df, inflation_sum_df["year"] == bigmac_sum_df["year"], "inner")
-
-    result_df.write.csv("/app/results/correlation_all_countries.csv", header=True, mode="overwrite")
-
-def agg_inf_by_year_and_bigmac():
-
-    inflation_sum_df, bigmac_sum_df = sum_bigmac_and_inflation_by_year()
-
-    bigmac_sum_df = bigmac_sum_df.groupBy("name", "year").sum("dollar_price")
-
-    bigmac_sum_df = bigmac_sum_df.withColumnRenamed("sum(dollar_price)", "bigmac_price_sum")
-
-    result_df = inflation_sum_df.join(bigmac_sum_df, [inflation_sum_df["Country"] == bigmac_sum_df["name"],
-                                                      inflation_sum_df["year"] == bigmac_sum_df["year"]], "inner")
-
-    result_df = result_df.join(df_geo_countries, "Country", "inner")
-
-    result_df.write.csv("/app/results/agg_inf_by_year_and_bigmac.csv", header=True, mode="overwrite")
-
-agg_inf_by_year_and_bigmac()
-calculate_correlation_all_countries()
+save_inflation_and_bigmac_data(spark, df_inflation, df_bigmac, "hdfs://namenode:9000/data/openbeer/data/output/inflation_bigmac.csv")
 
 spark.stop()
