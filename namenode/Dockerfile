@@ -11,6 +11,9 @@ VOLUME /hadoop/dfs/name
 ADD run.sh /run.sh
 RUN chmod a+x /run.sh
 
+ADD import_data.sh /import_data.sh
+RUN chmod a+x /import_data.sh
+
 EXPOSE 9870
 
 CMD ["/run.sh"]

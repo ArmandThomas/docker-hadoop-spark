@@ -26,6 +26,13 @@ df_bigmac = df_bigmac.select(
 df_bigmac = df_bigmac.withColumn("date", when(col("date").isNotNull(), col("date").cast("date")))
 df_bigmac = df_bigmac.withColumn("Year", year(col("date")))
 
+df_mcdo = spark.read.csv("hdfs://namenode:9000/data/openbeer/data/input/mcdo.csv", header=True)
+df_mcdo = df_mcdo.select(
+    "McDonald's Revenue", "Fiscal Year / Year"
+).dropna()
+
+df_mcdo = df_mcdo.withColumn("Fiscal Year / Year", when(col("Fiscal Year / Year").isNotNull(), col("Fiscal Year / Year").substr(2, 4)))
+
 for row in df_inflation.collect():
     for year in range(1970, 2023):
         if row[str(year)] == "":
@@ -55,12 +62,14 @@ def agg_for_all_years(df):
     df = df.filter((col("inflation_value") != 0) | (col("inflation_value").isNotNull()))
     length_inf = df.count()
 
-
     df = df.filter((col("dollar_price_sum") != 0) | (col("dollar_price_sum").isNotNull()))
     length_dollar = df.count()
 
     agg_result = df.groupBy("Year").agg(sum("inflation_value").alias("inflation_value_sum"), sum("dollar_price_sum").alias("dollar_price_sum")).withColumn("inflation_value_sum", col("inflation_value_sum") / length_inf * 100).withColumn("dollar_price_sum", col("dollar_price_sum") / length_dollar * 10)
-    return agg_result.sort("Year")
+
+    return agg_result
+
+
 
 def save_df_to_csv(df, path):
     df.coalesce(1).write.save(path, format='csv', mode='overwrite', header=True)
@@ -73,6 +82,9 @@ save_df_to_csv(df_result, "hdfs://namenode:9000/data/openbeer/data/output/csv_in
 agg_result = agg_for_all_years(df_result)
 agg_result.show(10)
 save_df_to_csv(agg_result, "hdfs://namenode:9000/data/openbeer/data/output/csv_agg_inflation_bigmac.csv")
+
+df_mcdo = df_mcdo.withColumnRenamed("Fiscal Year / Year", "Year").withColumnRenamed("McDonald's Revenue", "McDonalds_Revenue")
+save_df_to_csv(df_mcdo, "hdfs://namenode:9000/data/openbeer/data/output/csv_mcdo.csv")
 
 spark.stop()
 
