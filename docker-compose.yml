@@ -126,6 +126,12 @@ services:
     ports:
       - '8000:8000'
 
+  front:
+    build:
+      context: front
+    ports:
+      - '3000:3000'
+
 volumes:
   hadoop_namenode:
   hadoop_datanode:

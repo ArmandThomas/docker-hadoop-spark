@@ -45,8 +45,6 @@ def merge_df_by_country_name(df1, df2):
 
     df = df.withColumn("inflation_value",  lit(0))
 
-    print("hello")
-
     for year in range(1970, 2023):
         df = df.withColumn("inflation_value", when(col("Year") == year, col(str(year))).otherwise(col("inflation_value")))
         df = df.drop(str(year))
