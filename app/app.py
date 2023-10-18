@@ -2,7 +2,6 @@ from flask import Flask, jsonify, request
 from hdfs import InsecureClient
 
 app = Flask(__name__)
-app['DEBUG'] = True
 
 url = 'http://namenode:9870/'
 
@@ -17,4 +16,4 @@ def get_data():
     return jsonify(array_of_file)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8000, debug=True))
