@@ -1,6 +1,4 @@
-FROM ubuntu:latest
-
-RUN apt-get update && apt-get install -y git nodejs npm
+FROM timbru31/node-alpine-git
 
 RUN ["git", "clone", "https://github.com/ArmandThomas/bigmac_inflation_study.git"]
 
