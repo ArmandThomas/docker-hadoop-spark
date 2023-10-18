@@ -2,7 +2,6 @@ from flask import Flask, jsonify, request
 from hdfs import InsecureClient
 
 app = Flask(__name__)
-app.config['DEBUG'] = True
 
 url = 'http://namenode:9870/'
 
