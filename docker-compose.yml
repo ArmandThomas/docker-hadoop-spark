@@ -119,6 +119,13 @@ services:
     ports:
       - "8089:8089"
 
+  web:
+    build:
+      context: app
+    stop_signal: SIGINT
+    ports:
+      - '8000:8000'
+
 volumes:
   hadoop_namenode:
   hadoop_datanode:
