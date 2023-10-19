@@ -41,7 +41,9 @@ for row in df_inflation.collect():
             else:
                 df_inflation = df_inflation.withColumn(str(year), row[str(year - 1)])
 
-def merge_df_by_country_name(df1, df2):
+
+
+def merge_df_by_country_name(df1, df2, group = True):
     df = df1.join(df2, df1["Country"] == df2["name"], "inner").drop("name")
 
     df = df.withColumn("inflation_value",  lit(0))
@@ -50,11 +52,11 @@ def merge_df_by_country_name(df1, df2):
         df = df.withColumn("inflation_value", when(col("Year") == year, col(str(year))).otherwise(col("inflation_value")))
         df = df.drop(str(year))
 
-    df = df.groupBy("Country", "Year").agg(
-     avg("inflation_value").alias("inflation_value"),
-     avg("dollar_price").alias("dollar_price_avg")
-    )
-
+    if group:
+        df = df.groupBy("Country", "Year").agg(
+         avg("inflation_value").alias("inflation_value"),
+         avg("dollar_price").alias("dollar_price_avg")
+        )
     return df
 
 def agg_for_all_years(df):
@@ -70,6 +72,10 @@ def agg_for_all_years(df):
 
 def save_df_to_csv(df, path):
     df.coalesce(1).write.save(path, format='csv', mode='overwrite', header=True)
+
+df_copy_result = merge_df_by_country_name(df_inflation, df_bigmac, False)
+
+save_df_to_csv(df_copy_result, "hdfs://namenode:9000/data/openbeer/data/output/csv_inflation_bigmac_copy.csv")
 
 df_result = merge_df_by_country_name(df_inflation, df_bigmac)
 

@@ -24,13 +24,16 @@ def get_data():
 @app.route('/data/by_country', methods=['POST'])
 def get_data_by_country():
     country = request.json['country']
+    country = country.lower()
     array_of_file = client.list('/data/openbeer/data/output/csv_inflation_bigmac.csv')
     file_to_read = array_of_file[1]
 
     with client.read('/data/openbeer/data/output/csv_inflation_bigmac.csv/' + file_to_read, encoding='utf-8') as reader:
         pd_df = pd.read_csv(reader)
 
-    pd_df = pd_df[pd_df['Country'] == country]
+    pd_df = pd_df[pd_df['Country'].str.lower() == country]
+
+    pd_df = pd_df.sort_values(by=['Year'])
 
     return jsonify(pd_df.to_dict(orient='records'))
 
