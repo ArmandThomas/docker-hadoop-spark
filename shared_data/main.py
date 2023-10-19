@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession, Window
-from pyspark.sql.functions import col, year, when, sum, lit, avg
+from pyspark.sql.functions import col, year, when, sum, lit, avg, first
 
 spark = SparkSession.builder.appName("dataClean").getOrCreate()
 
@@ -17,14 +17,6 @@ df_inflation = df_inflation.select(
     "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014",
     "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"
 ).dropna()
-
-type = {
- "Energy Consumer Price Inflation" : "energy",
- "Food Consumer Price Inflation" : "food",
- "Headline Consumer Price Inflation" : "headline",
-}
-
-df_inflation = df_inflation.withColumn("Series Name", when(col("Series Name").isNotNull(), type[col("Series Name")]).otherwise(col("Series Name")))
 
 df_bigmac = spark.read.csv("hdfs://namenode:9000/data/openbeer/data/input/bigmac.csv", header=True)
 df_bigmac = df_bigmac.select(
@@ -60,20 +52,30 @@ def merge_df_by_country_name(df1, df2, group = True):
         df = df.withColumn("inflation_value", when(col("Year") == year, col(str(year))).otherwise(col("inflation_value")))
         df = df.drop(str(year))
 
+    df = df.groupBy("Country", "Year", "Series Name").agg(
+        first("dollar_price").alias("dollar_price"),
+        avg("dollar_price").alias("dollar_price_avg"),
+        avg("inflation_value").alias("inflation_value"),
+    )
 
-   df = df.groupBy("Country", "Year").agg(
-         avg("dollar_price").alias("dollar_price_avg"),
-         avg("inflation_value").alias("inflation_value_avg"),
-         when(col("Series Name") == "energy", col("inflation_value")).otherwise(lit(0)).alias("energy_inflation_value"),
-         when(col("Series Name") == "food", col("inflation_value")).otherwise(lit(0)).alias("food_inflation_value"),
-   )
+    filtered_df = df.filter((df["Series Name"] == "Headline Consumer Price Inflation") |
+                            (df["Series Name"] == "Food Consumer Price Inflation") |
+                            (df["Series Name"] == "Energy Consumer Price Inflation"))
 
-    return df
+    result_df = filtered_df.groupBy("Country", "Year").agg(
+        avg("dollar_price").alias("dollar_price_avg"),
+        avg(when(df["Series Name"] == "Headline Consumer Price Inflation", df["inflation_value"])).alias("global_inflation_avg"),
+        avg(when(df["Series Name"] == "Food Consumer Price Inflation", df["inflation_value"])).alias("food_inflation_avg"),
+        avg(when(df["Series Name"] == "Energy Consumer Price Inflation", df["inflation_value"])).alias("energy_inflation_avg")
+    )
+
+
+    return result_df
 
 def agg_for_all_years(df):
 
     agg_result = df.groupBy("Year").agg(
-        avg("inflation_value").alias("inflation_value_sum"),
+        avg("global_inflation_avg").alias("global_inflation_avg"),
         avg("dollar_price_avg").alias("dollar_price_avg")
     )
 
@@ -83,10 +85,6 @@ def agg_for_all_years(df):
 
 def save_df_to_csv(df, path):
     df.coalesce(1).write.save(path, format='csv', mode='overwrite', header=True)
-
-df_copy_result = merge_df_by_country_name(df_inflation, df_bigmac, False)
-
-save_df_to_csv(df_copy_result, "hdfs://namenode:9000/data/openbeer/data/output/csv_inflation_bigmac_copy.csv")
 
 df_result = merge_df_by_country_name(df_inflation, df_bigmac)
 

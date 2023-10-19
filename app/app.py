@@ -19,23 +19,23 @@ def get_data():
     with client.read('/data/openbeer/data/output/csv_agg_inflation_bigmac.csv/' + file_to_read, encoding='utf-8') as reader:
         pd_df = pd.read_csv(reader)
 
-    return jsonify(pd_df.to_dict(orient='records'))
+    return pd_df.to_json(orient='records')
 
 @app.route('/data/by_country', methods=['POST'])
 def get_data_by_country():
     country = request.json['country']
     country = country.lower()
-    array_of_file = client.list('/data/openbeer/data/output/csv_inflation_bigmac_copy.csv')
+    array_of_file = client.list('/data/openbeer/data/output/csv_inflation_bigmac.csv')
     file_to_read = array_of_file[1]
 
-    with client.read('/data/openbeer/data/output/csv_inflation_bigmac_copy.csv/' + file_to_read, encoding='utf-8') as reader:
+    with client.read('/data/openbeer/data/output/csv_inflation_bigmac.csv/' + file_to_read, encoding='utf-8') as reader:
         pd_df = pd.read_csv(reader)
 
     pd_df = pd_df[pd_df['Country'].str.lower() == country]
 
     pd_df = pd_df.sort_values(by=['Year'])
 
-    return jsonify(pd_df.to_dict(orient='records'))
+    return pd_df.to_json(orient='records')
 
 @app.route('/data/<int:year>', methods=['GET'])
 def get_data_by_year(year):
@@ -47,7 +47,7 @@ def get_data_by_year(year):
 
     pd_df = pd_df[pd_df['Year'] == year]
 
-    return jsonify(pd_df.to_dict(orient='records'))
+    return pd_df.to_json(orient='records')
 
 @app.route('/countries', methods=['GET'])
 def get_countries():
@@ -57,7 +57,7 @@ def get_countries():
     with client.read('/data/openbeer/data/output/csv_inflation_bigmac.csv/' + file_to_read, encoding='utf-8') as reader:
         pd_df = pd.read_csv(reader)
 
-    return jsonify(pd_df['Country'].unique().tolist())
+    return pd_df.to_json(orient='records')
 
 @app.route('/mcdo', methods=['GET'])
 def get_mcdo():
@@ -67,7 +67,7 @@ def get_mcdo():
     with client.read('/data/openbeer/data/output/csv_mcdo.csv/' + file_to_read, encoding='utf-8') as reader:
         pd_df = pd.read_csv(reader)
 
-    return jsonify(pd_df.to_dict(orient='records'))
+    return pd_df.to_json(orient='records')
 
 
 if __name__ == '__main__':
