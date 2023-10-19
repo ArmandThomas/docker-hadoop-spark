@@ -25,7 +25,7 @@ def get_data():
 def get_data_by_country():
     country = request.json['country']
     country = country.lower()
-    array_of_file = client.list('/data/openbeer/data/output/csv_inflation_bigmac.csv')
+    array_of_file = client.list('/data/openbeer/data/output/csv_inflation_bigmac_copy.csv')
     file_to_read = array_of_file[1]
 
     with client.read('/data/openbeer/data/output/csv_inflation_bigmac.csv/' + file_to_read, encoding='utf-8') as reader:
