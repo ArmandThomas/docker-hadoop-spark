@@ -12,11 +12,19 @@ df_inflation = spark.read.csv("hdfs://namenode:9000/data/openbeer/data/input/inf
 df_inflation = df_inflation.select(
     "Country Code",
     "Country",
-    "1970", "1971", "1972", "1973", "1974", "1975", "1976", "1977", "1978", "1979", "1980", "1981", "1982", "1983",
+    "Series Name","1970", "1971", "1972", "1973", "1974", "1975", "1976", "1977", "1978", "1979", "1980", "1981", "1982", "1983",
     "1984", "1985", "1986", "1987", "1988", "1989", "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999",
     "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014",
     "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022"
 ).dropna()
+
+type = {
+ "Energy Consumer Price Inflation" : "energy",
+ "Food Consumer Price Inflation" : "food",
+ "Headline Consumer Price Inflation" : "headline",
+}
+
+df_inflation = df_inflation.withColumn("Series Name", when(col("Series Name").isNotNull(), type[col("Series Name")]).otherwise(col("Series Name")))
 
 df_bigmac = spark.read.csv("hdfs://namenode:9000/data/openbeer/data/input/bigmac.csv", header=True)
 df_bigmac = df_bigmac.select(
@@ -52,11 +60,14 @@ def merge_df_by_country_name(df1, df2, group = True):
         df = df.withColumn("inflation_value", when(col("Year") == year, col(str(year))).otherwise(col("inflation_value")))
         df = df.drop(str(year))
 
-    if group:
-        df = df.groupBy("Country", "Year").agg(
-         avg("inflation_value").alias("inflation_value"),
-         avg("dollar_price").alias("dollar_price_avg")
-        )
+
+   df = df.groupBy("Country", "Year").agg(
+         avg("dollar_price").alias("dollar_price_avg"),
+         avg("inflation_value").alias("inflation_value_avg"),
+         when(col("Series Name") == "energy", col("inflation_value")).otherwise(lit(0)).alias("energy_inflation_value"),
+         when(col("Series Name") == "food", col("inflation_value")).otherwise(lit(0)).alias("food_inflation_value"),
+   )
+
     return df
 
 def agg_for_all_years(df):

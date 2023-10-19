@@ -28,7 +28,7 @@ def get_data_by_country():
     array_of_file = client.list('/data/openbeer/data/output/csv_inflation_bigmac_copy.csv')
     file_to_read = array_of_file[1]
 
-    with client.read('/data/openbeer/data/output/csv_inflation_bigmac.csv/' + file_to_read, encoding='utf-8') as reader:
+    with client.read('/data/openbeer/data/output/csv_inflation_bigmac_copy.csv/' + file_to_read, encoding='utf-8') as reader:
         pd_df = pd.read_csv(reader)
 
     pd_df = pd_df[pd_df['Country'].str.lower() == country]
