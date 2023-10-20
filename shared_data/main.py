@@ -75,7 +75,7 @@ def merge_df_by_country_name(df1, df2, group = True):
                                  when(col("Year") == 1970, 0)
                                  .otherwise((col("dollar_price_avg") - col("lag_price")) / col("lag_price") * 100)
                                  )
-    result_df = result_df.select("Country", "Year", "dollar_price_avg", "bigmac_inflation_rate", "global_inflation_avg", "food_inflation_avg", "energy_inflation_avg")
+    result_df = result_df.select("Country", "Year", "dollar_price_avg", "bigmac_inflation", "global_inflation_avg", "food_inflation_avg", "energy_inflation_avg")
 
 
     return result_df
@@ -84,7 +84,8 @@ def agg_for_all_years(df):
 
     agg_result = df.groupBy("Year").agg(
         avg("global_inflation_avg").alias("global_inflation_avg"),
-        avg("dollar_price_avg").alias("dollar_price_avg")
+        avg("dollar_price_avg").alias("dollar_price_avg"),
+        avg("bigmac_inflation").alias("bigmac_inflation"),
     )
 
     return agg_result.sort("Year")
