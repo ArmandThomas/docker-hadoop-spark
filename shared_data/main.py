@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession, Window
-from pyspark.sql.functions import col, year, when, sum, lit, avg, first, lag
+from pyspark.sql.functions import col, year, when, sum, lit, avg, first, lag, corr
 
 spark = SparkSession.builder.appName("dataClean").getOrCreate()
 
@@ -77,6 +77,10 @@ def merge_df_by_country_name(df1, df2, group = True):
                                  )
     result_df = result_df.select("Country", "Year", "dollar_price_avg", "bigmac_inflation", "global_inflation_avg", "food_inflation_avg", "energy_inflation_avg")
 
+    result_df = result_df.withColumn("diff", col("global_inflation_avg") - col("bigmac_inflation"))
+
+    result_df = result_df.withColumn("correlation", corr("bigmac_inflation", "global_inflation_avg").over(window_spec))
+
 
     return result_df
 
@@ -86,7 +90,11 @@ def agg_for_all_years(df):
         avg("global_inflation_avg").alias("global_inflation_avg"),
         avg("dollar_price_avg").alias("dollar_price_avg"),
         avg("bigmac_inflation").alias("bigmac_inflation"),
+        avg("correlation").alias("correlation"),
+        avg("diff").alias("diff"),
     )
+
+
 
     return agg_result.sort("Year")
 
