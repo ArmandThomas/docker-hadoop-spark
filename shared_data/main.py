@@ -79,8 +79,11 @@ def merge_df_by_country_name(df1, df2, group = True):
 
     result_df = result_df.withColumn("diff", col("global_inflation_avg") - col("bigmac_inflation"))
 
-    result_df = result_df.withColumn("correlation", corr("bigmac_inflation", "global_inflation_avg").over(window_spec))
+    df_cor = df.groupBy("Country").agg(
+        corr("dollar_price_avg", "inflation_value").alias("correlation")
+    )
 
+    result_df = result_df.join(df_cor, "Country", "inner")
 
     return result_df
 
@@ -108,7 +111,6 @@ df_result = merge_df_by_country_name(df_inflation, df_bigmac)
 save_df_to_csv(df_result, "hdfs://namenode:9000/data/openbeer/data/output/csv_inflation_bigmac.csv")
 
 agg_result = agg_for_all_years(df_result)
-agg_result.show(10)
 save_df_to_csv(agg_result, "hdfs://namenode:9000/data/openbeer/data/output/csv_agg_inflation_bigmac.csv")
 
 df_mcdo = df_mcdo.withColumnRenamed("Fiscal Year / Year", "Year").withColumnRenamed("McDonald's Revenue", "McDonalds_Revenue")
